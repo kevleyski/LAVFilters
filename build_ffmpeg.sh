@@ -24,17 +24,13 @@ do
     esac
 done
 
-THIRDPARTYPREFIX=$(pwd)/bin_${archdir}/thirdparty
-export PKG_CONFIG_PATH=${THIRDPARTYPREFIX}/lib/pkgconfig/
+BASEDIR=$(pwd)
+THIRDPARTYPREFIX=${BASEDIR}/bin_${archdir}/thirdparty
+export PKG_CONFIG_PATH="${THIRDPARTYPREFIX}/lib/pkgconfig/"
 
 make_dirs() (
-  if [ ! -d bin_${archdir}/lib ]; then
-    mkdir -p bin_${archdir}/lib
-  fi
-
-  if [ ! -d bin_${archdir}d/lib ]; then
-    mkdir -p bin_${archdir}d/lib
-  fi
+  mkdir -p bin_${archdir}/lib
+  mkdir -p bin_${archdir}d/lib
 )
 
 copy_libs() (
@@ -118,11 +114,14 @@ build() (
 )
 
 build_dcadec() (
-  cd thirdparty/dcadec
+  mkdir -p "${THIRDPARTYPREFIX}/dcadec"
+  cd "${THIRDPARTYPREFIX}/dcadec"
   if $clean_build ; then
-    make CONFIG_WINDOWS=1 clean
+    make -f "${BASEDIR}/thirdparty/dcadec/Makefile" CONFIG_WINDOWS=1 clean
   fi
-  make -j$NUMBER_OF_PROCESSORS CONFIG_WINDOWS=1 CONFIG_NDEBUG=1 CC=${cross_prefix}gcc AR=${cross_prefix}ar PREFIX=${THIRDPARTYPREFIX} install
+  make -f "${BASEDIR}/thirdparty/dcadec/Makefile" -j$NUMBER_OF_PROCESSORS CONFIG_WINDOWS=1 CONFIG_SMALL=1 CC=${cross_prefix}gcc AR=${cross_prefix}ar PREFIX="${THIRDPARTYPREFIX}" install-lib
+
+  cd "${BASEDIR}"
 )
 
 make_dirs
